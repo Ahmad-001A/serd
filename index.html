@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анимированное сердце</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="heartCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('heartCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Настройка размера холста
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Центрируем координаты
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+
+        // Функция для случайного числа в диапазоне
+        function random(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        // Функция для интерполяции цвета (от красного к темному)
+        function getColor(f) {
+            const r = Math.floor(255 * (1 - 0.6 * f));
+            const g = Math.floor(255 * 0.8 * (1 - f));
+            const b = Math.floor(255 * 0.7 * (1 - f));
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+
+        let i = 0;
+        const totalSteps = 320;
+
+        function draw() {
+            if (i >= totalSteps) return;
+
+            const a = 2 * Math.PI * i / totalSteps;
+            
+            // Формула сердца (умножаем на масштаб, чтобы влезло в экран)
+            const scale = Math.min(canvas.width, canvas.height) / 40; 
+            const xo = 16 * Math.pow(Math.sin(a), 3) * 16 * scale / 16;
+            const yo = (13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a)) * 16 * scale / 16;
+
+            const L = random(0.15, 0.5);
+            const xi = xo * (1 - L);
+            const yi = yo * (1 - L);
+
+            for (let j = 0; j < 10; j++) {
+                const f = j / 10;
+                
+                ctx.beginPath();
+                ctx.strokeStyle = getColor(f);
+                ctx.lineWidth = 2;
+                
+                // Координаты начала линии
+                const startX = centerX + xo + (xi - xo) * f;
+                const startY = centerY - (yo + (yi - yo) * f); // Инверсия Y для canvas
+                
+                // Координаты конца линии
+                const endX = centerX + xo + (xi - xo) * (f + 0.1);
+                const endY = centerY - (yo + (yi - yo) * (f + 0.1));
+
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(endX, endY);
+                ctx.stroke();
+            }
+
+            i++;
+            // Задержка для эффекта анимации (20мс)
+            setTimeout(draw, 20); 
+        }
+
+        // Запуск
+        draw();
+    </script>
+</body>
+</html>
